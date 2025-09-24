@@ -1,0 +1,34 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfplan
+.terraform/
+.terraform.lock.hcl
+
+# Terratest / Go
+*.out
+*.test
+*.log
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.prof
+go.sum
+
+# Keys / Secrets
+*.pem
+*.key
+*.pub
+key/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
