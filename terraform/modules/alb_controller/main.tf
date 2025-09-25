@@ -20,11 +20,15 @@ data "aws_iam_openid_connect_provider" "oidc" {
   arn = var.oidc_provider_arn
 }
 
-# IAM Policy for AWS Load Balancer Controller (Official JSON from AWS repo)
+# Load ALB IAM policy JSON trực tiếp từ GitHub
+data "http" "alb_policy" {
+  url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json"
+}
+
 resource "aws_iam_policy" "alb_controller" {
   name        = "${var.project_name}-AWSLoadBalancerControllerIAMPolicy"
   description = "Policy for AWS Load Balancer Controller"
-  policy      = file("${path.module}/iam_policy.json")
+  policy      = data.http.alb_policy.response_body
 }
 
 # Extract issuer hostpath from OIDC URL (remove https://)
@@ -60,7 +64,7 @@ resource "aws_iam_role_policy_attachment" "alb_attach" {
   policy_arn = aws_iam_policy.alb_controller.arn
 }
 
-# ServiceAccount with IRSA annotation (namespace phải có sẵn, ví dụ: kube-system)
+# ServiceAccount with IRSA annotation
 resource "kubernetes_service_account" "sa" {
   metadata {
     name      = "aws-load-balancer-controller"
