@@ -31,6 +31,4 @@ node_min_size       = 2
 node_max_size       = 4
 enable_karpenter    = false
 
-# DNS validation record (to be added after the ACM certificate is created)
-# Initially leave this empty. After apply, go to ACM console,
-# copy the generated CNAME record(s), and provide them here.
+cluster_name = "eks-obser-cluster"
