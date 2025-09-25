@@ -18,10 +18,10 @@ module "security_groups" {
 }
 
 module "eks" {
-  source            = "./modules/eks"
-  project_name      = var.project_name
-  cluster_version   = var.eks_cluster_version
-  vpc_id            = module.network.vpc_id
+  source             = "./modules/eks"
+  project_name       = var.project_name
+  cluster_version    = var.eks_cluster_version
+  vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 
   node_instance_types = var.node_instance_types
@@ -42,7 +42,7 @@ module "irsa_observability" {
   tempo_s3_bucket       = var.tempo_s3_bucket
 }
 
-# AWS Load Balancer Controller (Helm) + IRSA
+# AWS Load Balancer Controller (Helm + IRSA)
 module "alb_controller" {
   source            = "./modules/alb_controller"
   project_name      = var.project_name
