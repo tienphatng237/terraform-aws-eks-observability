@@ -18,7 +18,7 @@ resource "aws_iam_role" "ebs_csi_pod_role" {
       {
         Effect = "Allow"
         Principal = {
-          Service = "eks.amazonaws.com"
+          Service = "pods.eks.amazonaws.com"
         }
         Action = [ "sts:AssumeRole", "sts:TagSession" ]
       }

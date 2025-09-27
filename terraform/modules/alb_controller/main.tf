@@ -15,20 +15,16 @@ terraform {
   }
 }
 
-# OIDC provider (Created by module.eks)
+# OIDC provider created by EKS module
 data "aws_iam_openid_connect_provider" "oidc" {
   arn = var.oidc_provider_arn
 }
 
-# Load ALB IAM policy JSON trực tiếp từ GitHub
-data "http" "alb_policy" {
-  url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json"
-}
-
+# IAM Policy for AWS Load Balancer Controller (use JSON file)
 resource "aws_iam_policy" "alb_controller" {
   name        = "${var.project_name}-AWSLoadBalancerControllerIAMPolicy"
   description = "Policy for AWS Load Balancer Controller"
-  policy      = data.http.alb_policy.response_body
+  policy      = file("${path.module}/iam_policy.json")
 }
 
 # Extract issuer hostpath from OIDC URL (remove https://)
@@ -36,7 +32,7 @@ locals {
   issuer_hostpath = replace(data.aws_iam_openid_connect_provider.oidc.url, "https://", "")
 }
 
-# IAM Role for ServiceAccount aws-load-balancer-controller
+# IAM Role for ServiceAccount with IRSA
 resource "aws_iam_role" "alb_sa" {
   name = "${var.project_name}-alb-controller"
 
@@ -64,7 +60,7 @@ resource "aws_iam_role_policy_attachment" "alb_attach" {
   policy_arn = aws_iam_policy.alb_controller.arn
 }
 
-# ServiceAccount with IRSA annotation
+# ServiceAccount with annotation for IRSA
 resource "kubernetes_service_account" "sa" {
   metadata {
     name      = "aws-load-balancer-controller"
@@ -79,7 +75,7 @@ resource "kubernetes_service_account" "sa" {
   automount_service_account_token = true
 }
 
-# Helm chart for AWS Load Balancer Controller
+# Helm release for AWS Load Balancer Controller
 resource "helm_release" "alb" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"

@@ -21,7 +21,7 @@ private_subnet_cidrs = [
     "10.0.12.0/24", 
     "10.0.13.0/24"]
 
-create_second_nat = true
+create_second_nat = false
 
 # EKS cluster config
 eks_cluster_version = "1.30"
