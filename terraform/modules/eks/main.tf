@@ -34,6 +34,17 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
+resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSServicePolicy" {
+  role       = aws_iam_role.eks_cluster.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
+}
+
+# Recommended for ENI management inside VPC
+resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSVPCResourceController" {
+  role       = aws_iam_role.eks_cluster.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+}
+
 # IAM Role for EKS Node Group
 resource "aws_iam_role" "eks_nodes" {
   name = "${var.project_name}-eks-nodes-role"
