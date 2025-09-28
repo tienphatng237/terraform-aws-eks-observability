@@ -9,14 +9,14 @@ data "aws_eks_cluster_auth" "this" {
   depends_on = [module.eks]
 }
 
-# Kubernetes provider - fetch connection info directly from data sources (no kubeconfig file required)
+# Kubernetes provider - fetch connection info directly from data sources
 provider "kubernetes" {
   host                   = data.aws_eks_cluster.this.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.this.certificate_authority[0].data)
   token                  = data.aws_eks_cluster_auth.this.token
 }
 
-# Helm provider - uses the same connection info as Kubernetes provider
+# Helm provider - reuses the same connection info
 provider "helm" {
   kubernetes {
     host                   = data.aws_eks_cluster.this.endpoint

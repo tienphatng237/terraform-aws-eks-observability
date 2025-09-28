@@ -15,32 +15,34 @@ terraform {
   }
 }
 
-# OIDC provider created by EKS module
+# AWS Load Balancer Controller (ALB)
+
+# Lấy OIDC provider từ EKS module
 data "aws_iam_openid_connect_provider" "oidc" {
   arn = var.oidc_provider_arn
 }
 
-# IAM Policy for AWS Load Balancer Controller (use JSON file)
+# IAM Policy cho ALB Controller (sử dụng file JSON chính thức của AWS)
 resource "aws_iam_policy" "alb_controller" {
   name        = "${var.project_name}-AWSLoadBalancerControllerIAMPolicy"
   description = "Policy for AWS Load Balancer Controller"
   policy      = file("${path.module}/iam_policy.json")
 }
 
-# Extract issuer hostpath from OIDC URL (remove https://)
+# Extract hostpath từ OIDC URL (bỏ https://)
 locals {
   issuer_hostpath = replace(data.aws_iam_openid_connect_provider.oidc.url, "https://", "")
 }
 
-# IAM Role for ServiceAccount with IRSA
+# IAM Role cho ServiceAccount (IRSA)
 resource "aws_iam_role" "alb_sa" {
   name = "${var.project_name}-alb-controller"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRoleWithWebIdentity",
       Effect = "Allow",
+      Action = "sts:AssumeRoleWithWebIdentity",
       Principal = {
         Federated = data.aws_iam_openid_connect_provider.oidc.arn
       },
@@ -54,13 +56,13 @@ resource "aws_iam_role" "alb_sa" {
   })
 }
 
-# Attach IAM Policy to Role
+# Gắn IAM Policy vào Role
 resource "aws_iam_role_policy_attachment" "alb_attach" {
   role       = aws_iam_role.alb_sa.name
   policy_arn = aws_iam_policy.alb_controller.arn
 }
 
-# ServiceAccount with annotation for IRSA
+# ServiceAccount annotated với IAM Role (IRSA)
 resource "kubernetes_service_account" "sa" {
   metadata {
     name      = "aws-load-balancer-controller"
@@ -75,7 +77,7 @@ resource "kubernetes_service_account" "sa" {
   automount_service_account_token = true
 }
 
-# Helm release for AWS Load Balancer Controller
+# Helm release cho AWS Load Balancer Controller
 resource "helm_release" "alb" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
@@ -85,12 +87,12 @@ resource "helm_release" "alb" {
 
   values = [yamlencode({
     clusterName = var.cluster_name
+    region      = var.region
+    vpcId       = var.vpc_id
     serviceAccount = {
       create = false
       name   = kubernetes_service_account.sa.metadata[0].name
     }
-    region = var.region
-    vpcId  = var.vpc_id
     defaultTags = {
       Project = var.project_name
     }
