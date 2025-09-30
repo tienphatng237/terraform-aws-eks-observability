@@ -6,7 +6,6 @@ output "public_subnet_ids" {
   value = module.network.public_subnet_ids
 }
 
-# Chỉ còn 1 loại private subnet
 output "private_subnet_ids" {
   value = module.network.private_subnet_ids
 }

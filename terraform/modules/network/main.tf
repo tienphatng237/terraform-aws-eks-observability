@@ -53,7 +53,7 @@ resource "aws_subnet" "private" {
 
 # NAT Gateway EIP
 resource "aws_eip" "nat" {
-  count  = length(var.public_subnet_cidrs) # luôn tạo theo số AZ
+  count  = length(var.public_subnet_cidrs) # always create based on number of AZs
   domain = "vpc"
 
   tags = {
